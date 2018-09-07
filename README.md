@@ -25,6 +25,6 @@ Build instructions assume that we are building for the Raspberry Pi 3.
 1. Download source into \<source-dir\>
 2. Create build and install directories separate from the source directory. 
 3. Change to the build directory and execute the following CMake command : 
-   > cmake  -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=<install-dir>  <source-dir>
+   > cmake  -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=\<install-dir\>  \<source-dir\>
 4. Build and install
    > make install
