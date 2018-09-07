@@ -1,0 +1,25 @@
+BasedOnStyle: LLVM
+AllowAllParametersOfDeclarationOnNextLine : false
+AlignTrailingComments : true
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: All
+AlwaysBreakTemplateDeclarations: true
+BreakBeforeBraces: Custom
+BraceWrapping: 
+  AfterClass : true
+  AfterControlStatement : false
+  AfterEnum : true
+  AfterFunction : true
+  AfterNamespace : true
+  AfterStruct : true
+  AfterUnion : true
+BinPackArguments : false
+ColumnLimit: 100
+ConstructorInitializerAllOnOneLineOrOnePerLine: true 
+IndentCaseLabels: true
+IndentWrappedFunctionNames: true
+PointerAlignment: Left
+SortIncludes: false 
