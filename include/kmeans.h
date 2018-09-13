@@ -105,8 +105,8 @@ template <typename T>
 void Kmeans_CPU<T>::create_centroids(uint32_t num_k)
 {
   /* Create centroid points */
-  T max = std::numeric_limits<T>::infinity() ? std::numeric_limits<T>::infinity()
-                                             : std::numeric_limits<T>::max();
+  T max = std::numeric_limits<T>::has_infinity ? std::numeric_limits<T>::infinity()
+                                               : std::numeric_limits<T>::max();
   uint32_t cols = this->cols(), rows = this->data().size() / cols;
   uint32_t _seg_size = rows / num_k;
   uint32_t idx_i, idx_j;
@@ -135,8 +135,8 @@ Kmeans_CPU<T>::Kmeans_CPU(std::vector<T>& buff, uint32_t cols, uint32_t num_k,
       _num_pt(std::vector<uint32_t, util::Align_Mem<T, 128>>(num_k, 0)),
       _max_iter(max_iter)
 {
-  T max = std::numeric_limits<T>::infinity() ? std::numeric_limits<T>::infinity()
-                                             : std::numeric_limits<T>::max();
+  T max = std::numeric_limits<T>::has_infinity ? std::numeric_limits<T>::infinity()
+                                               : std::numeric_limits<T>::max();
   this->_data.reserve(buff.size());
   for (auto& it : buff)
     this->_data.push_back(it);
@@ -159,8 +159,8 @@ Kmeans_CPU<T>::Kmeans_CPU(std::vector<T>& buff, uint32_t cols, std::vector<T>& c
       _num_pt(std::vector<uint32_t, util::Align_Mem<T, 128>>(c_list.size() / cols, 0)),
       _max_iter(max_iter)
 {
-  T max = std::numeric_limits<T>::infinity() ? std::numeric_limits<T>::infinity()
-                                             : std::numeric_limits<T>::max();
+  T max = std::numeric_limits<T>::has_infinity ? std::numeric_limits<T>::infinity()
+                                               : std::numeric_limits<T>::max();
   this->_data.reserve(buff.size());
   for (auto& it : buff)
     this->_data.push_back(it);
@@ -197,8 +197,8 @@ Kmeans_CPU<T>::Kmeans_CPU(std::vector<T>& buff, uint32_t cols,
       _num_pt(std::vector<uint32_t, util::Align_Mem<T, 128>>(c_list.size() / cols, 0)),
       _max_iter(max_iter)
 {
-  T max = std::numeric_limits<T>::infinity() ? std::numeric_limits<T>::infinity()
-                                             : std::numeric_limits<T>::max();
+  T max = std::numeric_limits<T>::has_infinity ? std::numeric_limits<T>::infinity()
+                                               : std::numeric_limits<T>::max();
 
   this->_data.reserve(buff.size());
   for (auto& it : buff)
@@ -225,8 +225,8 @@ void Kmeans_CPU<T>::alloc_centroid()
   uint32_t num_data = this->data_plane().size(), num_cdata = this->cdata_plane().size();
   uint32_t d_idx, c_idx, inew = 0;
   for (d_idx = 0; d_idx < num_data; d_idx++) {
-    T best = std::numeric_limits<T>::infinity() ? std::numeric_limits<T>::infinity()
-                                                : std::numeric_limits<T>::max();
+    T best = std::numeric_limits<T>::has_infinity ? std::numeric_limits<T>::infinity()
+                                                  : std::numeric_limits<T>::max();
     for (c_idx = 0; c_idx < num_cdata; c_idx++) {
       acc = this->distance(d_idx, c_idx);
       if (acc < best) {
@@ -320,8 +320,8 @@ bool Kmeans_CPU<T>::compute_centroids()
     updated = false;
     /* for each data point ascertain and recalculate centroids */
     for (uint32_t d_idx = 0; d_idx < num_data; d_idx++) {
-      T best = std::numeric_limits<T>::infinity() ? std::numeric_limits<T>::infinity()
-                                                  : std::numeric_limits<T>::max();
+      T best = std::numeric_limits<T>::has_infinity ? std::numeric_limits<T>::infinity()
+                                                    : std::numeric_limits<T>::max();
 
       /* obtain least distance between data point and each centroid */
       for (uint32_t c_idx = 0; c_idx < num_cdata; c_idx++) {
