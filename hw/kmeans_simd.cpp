@@ -37,25 +37,25 @@
 namespace algo
 {
 
-Kmeans_HW<float, g_type::hw_simd>::Kmeans_HW(std::vector<float>& buff, uint32_t cols,
-                                             uint32_t num_k, uint32_t max_iter)
+Kmeans_HW<float, g_type::hw_simd, Align128>::Kmeans_HW(std::vector<float>& buff, uint32_t cols,
+                                                       uint32_t num_k, uint32_t max_iter)
     : Kmeans_CPU<float>(buff, cols, num_k, g_type::hw_simd, max_iter)
 {
 }
 
-Kmeans_HW<float, g_type::hw_simd>::Kmeans_HW(std::vector<float>& buff, uint32_t cols,
-                                             std::vector<float> c_list, uint32_t max_iter)
+Kmeans_HW<float, g_type::hw_simd, Align128>::Kmeans_HW(std::vector<float>& buff, uint32_t cols,
+                                                       std::vector<float> c_list, uint32_t max_iter)
     : Kmeans_CPU<float>(buff, cols, c_list, g_type::hw_simd, max_iter)
 {
 }
-Kmeans_HW<float, g_type::hw_simd>::Kmeans_HW(std::vector<float>& buff, uint32_t cols,
-                                             std::vector<float, util::Align_Mem<float, 128>> c_list,
-                                             uint32_t max_iter)
+Kmeans_HW<float, g_type::hw_simd, Align128>::Kmeans_HW(
+    std::vector<float>& buff, uint32_t cols,
+    std::vector<float, util::Align_Mem<float, Align128>> c_list, uint32_t max_iter)
     : Kmeans_CPU<float>(buff, cols, c_list, g_type::hw_simd, max_iter)
 {
 }
 
-void Kmeans_HW<float, g_type::hw_simd>::alloc_centroid()
+void Kmeans_HW<float, g_type::hw_simd, Align128>::alloc_centroid()
 {
   float acc;
   uint32_t data_rows = this->data_plane().size(), cdata_rows = this->cdata_plane().size();
@@ -74,7 +74,7 @@ void Kmeans_HW<float, g_type::hw_simd>::alloc_centroid()
   }
 }
 
-void Kmeans_HW<float, g_type::hw_simd>::zero_centroids()
+void Kmeans_HW<float, g_type::hw_simd, Align128>::zero_centroids()
 {
   uint32_t idx, _size = this->cdata().size();
   uint32_t _strides = _size / 4;
@@ -85,11 +85,11 @@ void Kmeans_HW<float, g_type::hw_simd>::zero_centroids()
   for (idx = 0; idx < _strides; idx++)
     vst1q_f32(&_buff[idx * 4], _vzero);
 
-  for (idx = _strides * idx; idx < _size; idx++)
+  for (idx = 4 * idx; idx < _size; idx++)
     _buff[idx] = 0;
 }
 
-void Kmeans_HW<float, g_type::hw_simd>::zero_num_points()
+void Kmeans_HW<float, g_type::hw_simd, Align128>::zero_num_points()
 {
   uint32_t idx, _size = this->num_pt().size();
   uint32_t _strides = _size / 4;
@@ -100,14 +100,13 @@ void Kmeans_HW<float, g_type::hw_simd>::zero_num_points()
   for (idx = 0; idx < _strides; idx++)
     vst1q_u32(&_buff[idx * 4], _vzero);
 
-  for (idx = _strides * idx; idx < _size; idx++)
+  for (idx = 4 * idx; idx < _size; idx++)
     _buff[idx] = 0;
 }
 
-void Kmeans_HW<float, g_type::hw_simd>::calc()
+void Kmeans_HW<float, g_type::hw_simd, Align128>::calc()
 {
   bool short_circuit = false;
-  std::chrono::high_resolution_clock::time_point cstart, cend;
 
   this->profile(true);
 
@@ -124,7 +123,8 @@ void Kmeans_HW<float, g_type::hw_simd>::calc()
  *  \note This function will work only on assumption that the number of columns
  *        is a mulitple of 4
  */
-float Kmeans_HW<float, g_type::hw_simd>::distance(uint32_t data_row, uint32_t centroid_row)
+float Kmeans_HW<float, g_type::hw_simd, Align128>::distance(uint32_t data_row,
+                                                            uint32_t centroid_row)
 {
   uint32_t idx = 0, cols = this->cols();
   float* d_row = this->data_plane()[data_row];
@@ -146,7 +146,7 @@ float Kmeans_HW<float, g_type::hw_simd>::distance(uint32_t data_row, uint32_t ce
  *  \note This function will work only on assumption that the number of columns
  *        is a mulitple of 4
  */
-void Kmeans_HW<float, g_type::hw_simd>::reinit_centroids()
+void Kmeans_HW<float, g_type::hw_simd, Align128>::reinit_centroids()
 {
   uint32_t row, col, it;
   uint32_t num_rows = this->data_plane().size(), num_cols = this->cols();
@@ -230,8 +230,8 @@ void Kmeans_HW<float, g_type::hw_simd>::reinit_centroids()
   }
 }
 
-void Kmeans_HW<float, g_type::hw_simd>::move_data_pt(uint32_t dest_row, uint32_t src_row,
-                                                     uint32_t data_row)
+void Kmeans_HW<float, g_type::hw_simd, Align128>::move_data_pt(uint32_t dest_row, uint32_t src_row,
+                                                               uint32_t data_row)
 {
   uint32_t num_cols = this->cols(), _stride = num_cols / 4;
   float* dest = this->cdata_plane()[dest_row];
@@ -264,5 +264,218 @@ void Kmeans_HW<float, g_type::hw_simd>::move_data_pt(uint32_t dest_row, uint32_t
     vst1q_f32(&src[col * 4], _vsrc);
     vst1q_f32(&dest[col * 4], _vdest);
   }
+}
+
+Kmeans_HW<float, g_type::hw_simd, Align64>::Kmeans_HW(std::vector<float>& buff, uint32_t cols,
+                                                      uint32_t num_k, uint32_t max_iter)
+    : Kmeans_CPU<float>(buff, cols, num_k, g_type::hw_simd, max_iter)
+{
+}
+Kmeans_HW<float, g_type::hw_simd, Align64>::Kmeans_HW(std::vector<float>& buff, uint32_t cols,
+                                                      std::vector<float> c_list, uint32_t max_iter)
+    : Kmeans_CPU<float>(buff, cols, c_list, g_type::hw_simd, max_iter)
+{
+}
+Kmeans_HW<float, g_type::hw_simd, Align64>::Kmeans_HW(
+    std::vector<float>& buff, uint32_t cols,
+    std::vector<float, util::Align_Mem<float, Align128>> c_list, uint32_t max_iter)
+    : Kmeans_CPU<float>(buff, cols, c_list, g_type::hw_simd, max_iter)
+{
+}
+
+/*!
+ *  \note This function will work only on assumption that the number of columns
+ *        is a multiple of 2
+ */
+float Kmeans_HW<float, g_type::hw_simd, Align64>::distance(uint32_t data_row, uint32_t centroid_row)
+{
+  uint32_t idx = 0, cols = this->cols();
+  float* d_row = this->data_plane()[data_row];
+  float* c_row = this->cdata_plane()[centroid_row];
+  float tot = 0.0f;
+
+  uint32_t _blks = cols / 2;
+  float32x2_t _vtot = vmov_n_f32(0.0f);
+  for (idx = 0; idx < _blks; idx++) {
+    float32x2_t _vdiff = vsub_f32(vld1_f32(&d_row[idx * 2]), vld1_f32(&c_row[idx * 2]));
+    _vtot = vmla_f32(_vtot, _vdiff, _vdiff);
+  }
+  _vtot = vpadd_f32(_vtot, _vtot);
+  return vget_lane_f32(_vtot, 0);
+}
+
+void Kmeans_HW<float, g_type::hw_simd, Align64>::alloc_centroid()
+{
+  float acc;
+  uint32_t data_rows = this->data_plane().size(), cdata_rows = this->cdata_plane().size();
+  uint32_t d_idx, c_idx, inew = 0;
+  for (d_idx = 0; d_idx < data_rows; d_idx++) {
+    float best = std::numeric_limits<float>::infinity();
+    for (c_idx = 0; c_idx < cdata_rows; c_idx++) {
+      acc = this->distance(d_idx, c_idx);
+      if (acc < best) {
+        best = acc;
+        inew = c_idx;
+      }
+    }
+    if (this->clist()[d_idx] != inew)
+      this->clist()[d_idx] = inew;
+  }
+}
+
+void Kmeans_HW<float, g_type::hw_simd, Align64>::zero_centroids()
+{
+  float* _buff = &(this->cdata()[0]);
+  uint32_t _size = this->cdata().size();
+  uint32_t idx, _strides = _size / 4;
+  float32x4_t _vzero = vmovq_n_f32(0.0f);
+
+  for (idx = 0; idx < _strides; idx++)
+    vst1q_f32(&_buff[idx * 4], _vzero);
+
+  for (idx = idx * 4; idx < _size; idx++)
+    _buff[idx] = 0;
+}
+
+void Kmeans_HW<float, g_type::hw_simd, Align64>::zero_num_points()
+{
+  uint32_t idx, _size = this->num_pt().size();
+  uint32_t _strides = _size / 4;
+
+  uint32_t* _buff = &(this->num_pt()[0]);
+
+  uint32x4_t _vzero = vmovq_n_u32(0u);
+  for (idx = 0; idx < _strides; idx++)
+    vst1q_u32(&_buff[idx * 4], _vzero);
+
+  for (idx = 4 * idx; idx < _size; idx++)
+    _buff[idx] = 0;
+}
+
+/*!
+ *  \note This function will work only on assumption that the number of columns
+ *        is a mulitple of 2
+ */
+void Kmeans_HW<float, g_type::hw_simd, Align64>::reinit_centroids()
+{
+  uint32_t row, col, it;
+  uint32_t num_rows = this->data_plane().size(), num_cols = this->cols();
+  uint32_t _dstrides, _cstrides = num_cols / 2;
+
+  /*!
+   * for each row accummulate num-of-pts and
+   *  column-wise totals for each centroid
+   */
+  for (uint32_t row = 0; row < num_rows; row++) {
+    /* accumulate number of points in each centroid */
+    it = this->clist()[row];
+    this->num_pt()[it]++;
+    for (uint32_t col = 0; col < _cstrides; col++) {
+      float32x2_t _vdata = vld1_f32(&(this->data_plane()[row][col * 2]));
+      float32x2_t _vcdata = vld1_f32(&(this->cdata_plane()[it][col * 2]));
+      _vcdata = vadd_f32(_vcdata, _vdata);
+      vst1_f32(&(this->cdata_plane()[it][col * 2]), _vcdata);
+    } /* for each 2 columns - accumulate */
+  }
+
+  /* get the average of all the axes in each centroid */
+  num_rows = this->cdata_plane().size();
+  _dstrides = num_rows / 2;
+  for (row = 0; row < _dstrides; row++) {
+    float32x2_t _vf_numpt0 = vcvt_f32_u32(vld1_u32(&(this->num_pt()[row * 2])));
+
+    /*!
+     * take reciprocal of num-points. To improve accuracy
+     * do a single newton-raphson iteration first approximation
+     */
+    float32x2_t _vdiv_x0 = vrecpe_f32(_vf_numpt0);
+    _vf_numpt0 = vmul_f32(_vdiv_x0, vrecps_f32(_vf_numpt0, _vdiv_x0));
+
+    /* broadcast to 2 vectors for simultaneous division */
+    float32x2_t _vf_numpt1 = vdup_n_f32(vget_lane_f32(_vf_numpt0, 1));
+    _vf_numpt0 = vdup_n_f32(vget_lane_f32(_vf_numpt0, 0));
+
+    /* average out each accumulated dimension */
+    for (col = 0; col < _cstrides; col++) {
+      float32x2_t _vcdata0 = vld1_f32(&(this->cdata_plane()[row * 2][col * 2]));
+      float32x2_t _vcdata1 = vld1_f32(&(this->cdata_plane()[row * 2 + 1][col * 2]));
+
+      /*!
+       * Vector division to obtain average
+       * _vf_numpt contains inverse of distance
+       */
+      _vcdata0 = vmul_f32(_vcdata0, _vf_numpt0);
+      _vcdata1 = vmul_f32(_vcdata1, _vf_numpt1);
+
+      /* Store back into centroid data */
+      vst1_f32(&(this->cdata_plane()[row * 2][col * 2]), _vcdata0);
+      vst1_f32(&(this->cdata_plane()[row * 2 + 1][col * 2]), _vcdata1);
+    }
+  }
+
+  /* Do the remainder row over here. dont unroll the loop */
+  for (row = row * 2; row < num_rows; row++) {
+    float32x2_t _vf_numpt = vcvt_f32_u32(vmov_n_u32(this->num_pt()[row]));
+    /*!
+     * take reciprocal of num-points. To improve accuracy
+     * do a single newton-raphson iteration first approximation
+     */
+    float32x2_t _vdiv_x0 = vrecpe_f32(_vf_numpt);
+    _vf_numpt = vmul_f32(_vdiv_x0, vrecps_f32(_vf_numpt, _vdiv_x0));
+
+    for (col = 0; col < _cstrides; col++) {
+      float32x2_t _vcdata = vld1_f32(&(this->cdata_plane()[row][col * 2]));
+      _vcdata = vmul_f32(_vcdata, _vf_numpt);
+      vst1_f32(&(this->cdata_plane()[row][col * 2]), _vcdata);
+    }
+  }
+}
+
+void Kmeans_HW<float, g_type::hw_simd, Align64>::move_data_pt(uint32_t dest_row, uint32_t src_row,
+                                                              uint32_t data_row)
+{
+  uint32_t num_cols = this->cols(), _stride = num_cols / 2;
+  float* dest = this->cdata_plane()[dest_row];
+  float* src = this->cdata_plane()[src_row];
+  float* data = this->data_plane()[data_row];
+
+  for (uint32_t col = 0; col < _stride; col++) {
+    float32x2_t _vsrc = vld1_f32(&src[col * 2]);
+    float32x2_t _vdata = vld1_f32(&data[col * 2]);
+    float32x2_t _vdest = vld1_f32(&dest[col * 2]);
+    float32x2_t _vf_dest_numpt = vcvt_f32_u32(vdup_n_u32(this->num_pt()[dest_row]));
+    float32x2_t _vf_src_numpt = vcvt_f32_u32(vdup_n_u32(this->num_pt()[src_row]));
+
+    /*!
+     * take reciprocal of num-points for both destination and source rows.
+     * To improve accuracy do * a single newton-raphson iteration first
+     * approximation
+     */
+    float32x2_t _vdest_x0 = vrecpe_f32(_vf_dest_numpt);
+    _vf_dest_numpt = vmul_f32(_vdest_x0, vrecps_f32(_vf_dest_numpt, _vdest_x0));
+
+    float32x2_t _vsrc_x0 = vrecpe_f32(_vf_src_numpt);
+    _vf_src_numpt = vmul_f32(_vsrc_x0, vrecps_f32(_vf_src_numpt, _vsrc_x0));
+
+    _vsrc = vadd_f32(_vsrc, vmul_f32(vsub_f32(_vsrc, _vdata), _vf_src_numpt));
+    _vdest = vadd_f32(_vdest, vmul_f32(vsub_f32(_vdata, _vdest), _vf_dest_numpt));
+
+    vst1_f32(&src[col * 2], _vsrc);
+    vst1_f32(&dest[col * 2], _vdest);
+  }
+}
+
+void Kmeans_HW<float, g_type::hw_simd, Align64>::calc()
+{
+  bool short_circuit = false;
+  this->profile(true);
+
+  this->alloc_centroid();
+  this->zero_centroids();
+  this->zero_num_points();
+  this->reinit_centroids();
+  short_circuit = this->compute_centroids();
+
+  this->profile(false);
 }
 }

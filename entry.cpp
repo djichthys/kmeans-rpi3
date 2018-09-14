@@ -352,22 +352,29 @@ static std::unique_ptr<algo::Kmeans_CPU<T1>>
     case g_type::hw_simd:
       if (centroid) { // use given centroid list to start
         if (((data_2d->dimension()->cols() * sizeof(T1)) % 16) == 0) {
-          ctx = std::make_unique<algo::Kmeans_HW<T1, g_type::hw_simd>>(
+          ctx = std::make_unique<algo::Kmeans_HW<T1, g_type::hw_simd, Align128>>(
               data_2d->raw_buffer(),
               data_2d->dimension()->cols(),
               centroid.expected()->raw_buffer(),
               max_iter);
-          // centroid_2d->raw_buffer(), max_iter);
+        } else if (((data_2d->dimension()->cols() * sizeof(T1)) % 8) == 0) {
+          ctx = std::make_unique<algo::Kmeans_HW<T1, g_type::hw_simd, Align64>>(
+              data_2d->raw_buffer(),
+              data_2d->dimension()->cols(),
+              centroid.expected()->raw_buffer(),
+              max_iter);
         } else {
           ctx = std::make_unique<algo::Kmeans_CPU<T1>>(data_2d->raw_buffer(),
                                                        data_2d->dimension()->cols(),
                                                        centroid.expected()->raw_buffer(),
                                                        max_iter);
-          // centroid_2d->raw_buffer(), max_iter);
         }
       } else { // randomly assign data points as centroids
         if (((data_2d->dimension()->cols() * sizeof(T1)) % 16) == 0) {
-          ctx = std::make_unique<algo::Kmeans_HW<T1, g_type::hw_simd>>(
+          ctx = std::make_unique<algo::Kmeans_HW<T1, g_type::hw_simd, Align128>>(
+              data_2d->raw_buffer(), data_2d->dimension()->cols(), centroid.unexpected(), max_iter);
+        } else if (((data_2d->dimension()->cols() * sizeof(T1)) % 8) == 0) {
+          ctx = std::make_unique<algo::Kmeans_HW<T1, g_type::hw_simd, Align64>>(
               data_2d->raw_buffer(), data_2d->dimension()->cols(), centroid.unexpected(), max_iter);
         } else {
           ctx = std::make_unique<algo::Kmeans_CPU<T1>>(
