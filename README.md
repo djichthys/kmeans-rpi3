@@ -1,11 +1,12 @@
 # Kmeans on ARM with SIMD
-This is an implementation of a Naive K-Means implementation, using the MacQueeens algorithm on ARM that attempts to use ARM Neon SIMD instructions where possible. This is done by detecting if the number of columns is a multiple of 16 (for 128-bit SIMD operations). If this is not possible, the normal CPU execution context will execute on the CPU. 
+This is an implementation of a Naive K-Means implementation, using the MacQueeens algorithm on ARM. It attempts to use ARM Neon SIMD instructions where possible. This is done by detecting if the number of columns is a multiple of 16 (for 128-bit SIMD operations). If this is not possible, a check is then made for the number of columns being a (multiple of 2 for 64-bit SIMD operations). The fallback position is a CPU execution context, which will execute the Naive MacQueens algorithm on the CPU. 
 
 
 ## Options 
 1) Any text file with data can be parsed to obtain the data to be characterised. The data is assumed to be in the 2-D format, with each row holding a data point. Each column holds the value of each dimension of the data. 
 2) The initial starting centroids can be provided as a file in the same format as that of the data file or as an integer signifying the number of centroids. In the latter case, initial centroids are picked up as a pseudo random distribution of data points within the data sets. 
 3) Data can initially be read in many different number formats. However this will eventually be typecast to float for calculation purposes. 
+4) The Maximum number of iterations to converge on a solution can be passed in on the command line
 
 
 ## Build instructions

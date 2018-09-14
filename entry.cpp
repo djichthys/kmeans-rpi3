@@ -127,13 +127,13 @@ int main(int argc, char* argv[])
       util::Expected<parser::Data_Container<float, 2>*, uint32_t> centroid(centroid_2d);
 
       // Get execution context for standard CPU version of code
-      kmeans = get_exec_ctx<float>(data_2d, centroid, g_type::hw_cpu);
+      kmeans = get_exec_ctx<float>(data_2d, centroid, g_type::hw_cpu, opt->max_iter());
 
     } else {
       util::Expected<parser::Data_Container<float, 2>*, uint32_t> centroid(
           opt->k_val().unexpected());
       // Get execution context for standard CPU version of code
-      kmeans = get_exec_ctx<float>(data_2d, centroid, g_type::hw_cpu);
+      kmeans = get_exec_ctx<float>(data_2d, centroid, g_type::hw_cpu, opt->max_iter());
 
       // Extract same centroids from the CPU context and copy over to SIMD
       // context */
@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
     // the number of columns is not a multiple of 4, function
     // will default back to normal CPU execution
     util::Expected<parser::Data_Container<float, 2>*, uint32_t> centroid(centroid_2d);
-    kmeans_simd = get_exec_ctx<float>(data_2d, centroid, g_type::hw_simd);
+    kmeans_simd = get_exec_ctx<float>(data_2d, centroid, g_type::hw_simd, opt->max_iter());
 
     // Clean-up initial data and centroid points
     if (d_wrap) {
