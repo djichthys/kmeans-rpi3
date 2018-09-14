@@ -24,28 +24,34 @@ namespace algo
 {
 
 template <>
-class Kmeans_HW<float, g_type::hw_simd> : public Kmeans_CPU<float>
+class Kmeans_HW<float, g_type::hw_simd, Align128> : public Kmeans_CPU<float>
 {
 public:
   Kmeans_HW() = delete;
-#if 0 
-  Kmeans_HW(std::vector<float>& buff, uint32_t cols, uint32_t num_k, uint32_t max_iter)
-      : Kmeans_CPU<float>(buff, cols, num_k, g_type::hw_simd, max_iter)
-  {
-  }
-  Kmeans_HW(std::vector<float>& buff, uint32_t cols, std::vector<float> c_list, uint32_t max_iter)
-      : Kmeans_CPU<float>(buff, cols, c_list, g_type::hw_simd, max_iter)
-  {
-  }
-  Kmeans_HW(std::vector<float>& buff, uint32_t cols,
-     std::vector<float, util::Align_Mem<float, 128>> c_list, uint32_t max_iter)
-      : Kmeans_CPU<float>(buff, cols, c_list, g_type::hw_simd, max_iter)
-  {
-  }
-#endif
   Kmeans_HW(std::vector<float>&, uint32_t, uint32_t, uint32_t);
   Kmeans_HW(std::vector<float>&, uint32_t, std::vector<float>, uint32_t);
-  Kmeans_HW(std::vector<float>&, uint32_t, std::vector<float, util::Align_Mem<float, 128>>,
+  Kmeans_HW(std::vector<float>&, uint32_t, std::vector<float, util::Align_Mem<float, Align128>>,
+            uint32_t);
+
+  virtual void calc();
+
+protected:
+  virtual float distance(uint32_t, uint32_t);
+  virtual void alloc_centroid();
+  virtual void zero_centroids();
+  virtual void zero_num_points();
+  virtual void reinit_centroids();
+  virtual void move_data_pt(uint32_t, uint32_t, uint32_t);
+};
+
+template <>
+class Kmeans_HW<float, g_type::hw_simd, Align64> : public Kmeans_CPU<float>
+{
+public:
+  Kmeans_HW() = delete;
+  Kmeans_HW(std::vector<float>&, uint32_t, uint32_t, uint32_t);
+  Kmeans_HW(std::vector<float>&, uint32_t, std::vector<float>, uint32_t);
+  Kmeans_HW(std::vector<float>&, uint32_t, std::vector<float, util::Align_Mem<float, Align128>>,
             uint32_t);
 
   virtual void calc();

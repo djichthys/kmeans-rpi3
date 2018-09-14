@@ -22,7 +22,7 @@
 
 namespace algo
 {
-template <typename T, g_type::Hardware_Type Acc>
+template <typename T, g_type::Hardware_Type Acc, uint32_t Alignment>
 class Kmeans_HW : public algo::Kmeans_CPU<T>
 {
 };
