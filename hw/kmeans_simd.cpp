@@ -85,7 +85,7 @@ void Kmeans_HW<float, g_type::hw_simd>::zero_centroids()
   for (idx = 0; idx < _strides; idx++)
     vst1q_f32(&_buff[idx * 4], _vzero);
 
-  for (idx = _strides * idx; idx < _size; idx++)
+  for (idx = 4 * idx; idx < _size; idx++)
     _buff[idx] = 0;
 }
 
@@ -100,7 +100,7 @@ void Kmeans_HW<float, g_type::hw_simd>::zero_num_points()
   for (idx = 0; idx < _strides; idx++)
     vst1q_u32(&_buff[idx * 4], _vzero);
 
-  for (idx = _strides * idx; idx < _size; idx++)
+  for (idx = 4 * idx; idx < _size; idx++)
     _buff[idx] = 0;
 }
 
