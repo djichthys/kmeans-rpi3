@@ -17,7 +17,7 @@ Build instructions assume that we are building for the Raspberry Pi 3.
    > git clone git@github.com:raspberrypi/tools.git
 3. Create build and install directories separate from the source directory. 
 4. Change to the build directory and execute the following CMake command : 
-   > cmake -DTOOLCHAIN_DIR-\<toolchain-dir\> -DCMAKE_TOOLCHAIN_FILE=\<source-dir\>/toolchain-rpi.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=\<install-dir\>  \<source-dir\>
+   > cmake -DTOOLCHAIN_DIR=\<toolchain-dir\> -DCMAKE_TOOLCHAIN_FILE=\<source-dir\>/toolchain-rpi.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=\<install-dir\>  \<source-dir\>
 5. Build and install
    > make install
 
